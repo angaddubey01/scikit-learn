@@ -12,6 +12,7 @@ from __future__ import division
 #         Raghav RV <rvraghav93@gmail.com>
 # License: BSD 3 clause
 
+import time
 from abc import ABCMeta, abstractmethod
 from collections import Mapping, namedtuple, defaultdict, Sequence, Iterable
 from functools import partial, reduce
@@ -766,10 +767,12 @@ class BaseSearchCV(six.with_metaclass(ABCMeta, BaseEstimator,
         if self.refit:
             self.best_estimator_ = clone(base_estimator).set_params(
                 **self.best_params_)
+            refit_start_time = time.time()
             if y is not None:
                 self.best_estimator_.fit(X, y, **fit_params)
             else:
                 self.best_estimator_.fit(X, **fit_params)
+            self.refit_time_ = time.time() - refit_start_time
 
         # Store the only scorer not as a dict for single metric evaluation
         self.scorer_ = scorers if self.multimetric_ else scorers['score']
@@ -1075,6 +1078,10 @@ class GridSearchCV(BaseSearchCV):
 
     n_splits_ : int
         The number of cross-validation splits (folds/iterations).
+        
+    refit_time_ : float
+        The time (in seconds) it took to refit the best model on the whole dataset.
+        This is only available if ``refit=True``.
 
     Notes
     ------
@@ -1386,6 +1393,10 @@ class RandomizedSearchCV(BaseSearchCV):
 
     n_splits_ : int
         The number of cross-validation splits (folds/iterations).
+        
+    refit_time_ : float
+        The time (in seconds) it took to refit the best model on the whole dataset.
+        This is only available if ``refit=True``.
 
     Notes
     -----
