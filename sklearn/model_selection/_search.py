@@ -18,6 +18,7 @@ from functools import partial, reduce
 from itertools import product
 import operator
 import warnings
+import time
 
 import numpy as np
 from scipy.stats import rankdata
@@ -766,10 +767,13 @@ class BaseSearchCV(six.with_metaclass(ABCMeta, BaseEstimator,
         if self.refit:
             self.best_estimator_ = clone(base_estimator).set_params(
                 **self.best_params_)
+            # time the final refit on the whole dataset
+            start_time = time.time()
             if y is not None:
                 self.best_estimator_.fit(X, y, **fit_params)
             else:
                 self.best_estimator_.fit(X, **fit_params)
+            self.refit_time_ = time.time() - start_time
 
         # Store the only scorer not as a dict for single metric evaluation
         self.scorer_ = scorers if self.multimetric_ else scorers['score']
@@ -1075,6 +1079,10 @@ class GridSearchCV(BaseSearchCV):
 
     n_splits_ : int
         The number of cross-validation splits (folds/iterations).
+
+    refit_time_ : float
+        Time (in seconds) used to refit the best estimator on the entire dataset.
+        Only available if refit=True.
 
     Notes
     ------
@@ -1386,6 +1394,10 @@ class RandomizedSearchCV(BaseSearchCV):
 
     n_splits_ : int
         The number of cross-validation splits (folds/iterations).
+
+    refit_time_ : float
+        Time (in seconds) used to refit the best estimator on the entire dataset.
+        Only available if refit=True.
 
     Notes
     -----
