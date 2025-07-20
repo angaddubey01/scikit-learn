@@ -652,14 +652,21 @@ class StratifiedKFold(_BaseKFold):
         # will break when the data is not 100% stratifiable for all classes.
         # So we pass np.zeroes(max(c, n_splits)) as data to the KFold
         per_cls_cvs = [
-            KFold(self.n_splits, shuffle=self.shuffle,
-                  random_state=rng).split(np.zeros(max(count, self.n_splits)))
+            KFold(self.n_splits, shuffle=False).split(np.zeros(max(count, self.n_splits)))
             for count in y_counts]
 
         test_folds = np.zeros(n_samples, dtype=np.int)
         for test_fold_indices, per_cls_splits in enumerate(zip(*per_cls_cvs)):
             for cls, (_, test_split) in zip(unique_y, per_cls_splits):
-                cls_test_folds = test_folds[y == cls]
+                # Get the indices for this class
+                cls_indices = np.where(y == cls)[0]
+                
+                # If shuffle is True, shuffle the indices for this class
+                if self.shuffle:
+                    cls_indices = check_random_state(rng).permutation(cls_indices)
+                
+                cls_test_folds = test_folds[cls_indices]
+                
                 # the test split can be too big because we used
                 # KFold(...).split(X[:max(c, n_splits)]) when data is not 100%
                 # stratifiable for all the classes
@@ -667,7 +674,7 @@ class StratifiedKFold(_BaseKFold):
                 # If this is the case, let's trim it:
                 test_split = test_split[test_split < len(cls_test_folds)]
                 cls_test_folds[test_split] = test_fold_indices
-                test_folds[y == cls] = cls_test_folds
+                test_folds[cls_indices] = cls_test_folds
 
         return test_folds
 
