@@ -1013,6 +1013,9 @@ class CountVectorizer(BaseEstimator, VectorizerMixin):
 
     def get_feature_names(self):
         """Array mapping from feature integer indices to feature name"""
+        # If a vocabulary was passed during initialization, ensure it is validated
+        # so that vocabulary_ is set before checking.
+        self._validate_vocabulary()
         self._check_vocabulary()
 
         return [t for t, i in sorted(six.iteritems(self.vocabulary_),

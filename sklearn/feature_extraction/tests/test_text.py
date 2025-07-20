@@ -558,6 +558,13 @@ def test_feature_names():
     for idx, name in enumerate(feature_names):
         assert_equal(idx, cv.vocabulary_.get(name))
 
+def test_get_feature_names_with_predefined_vocabulary():
+    # get_feature_names should work without fitting when vocabulary is provided
+    vocabulary = ['and', 'document', 'first', 'is', 'one',
+                  'second', 'the', 'third', 'this']
+    vectorizer = CountVectorizer(vocabulary=vocabulary)
+    feature_names = vectorizer.get_feature_names()
+    assert_equal(feature_names, vocabulary)
 
 def test_vectorizer_max_features():
     vec_factories = (
