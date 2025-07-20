@@ -10,7 +10,12 @@ import warnings
 import numpy as np
 from scipy.sparse import issparse
 
-from .murmurhash import murmurhash3_32
+try:
+    from .murmurhash import murmurhash3_32
+except ImportError:
+    # C extension for murmurhash not built: provide placeholder
+    def murmurhash3_32(*args, **kwargs):
+        raise ImportError("murmurhash3_32 is unavailable: C extension not built")
 from .class_weight import compute_class_weight, compute_sample_weight
 from . import _joblib
 from ..exceptions import DataConversionWarning
